@@ -1,0 +1,22 @@
+{
+  "name": "franklin",
+  "version": "0.0.1",
+  "description": "Utilities for the Franklin County Auditor website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t-bone-analytica/franklin.git"
+  },
+  "author": "Geoff Young <geoffreysyoung@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/t-bone-analytica/franklin/issues"
+  },
+  "homepage": "https://github.com/t-bone-analytica/franklin#readme",
+  "dependencies": {
+    "puppeteer": "^1.6.0"
+  }
+}
