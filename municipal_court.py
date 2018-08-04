@@ -1,8 +1,15 @@
 #!/usr/env python
-
+from pprint import pprint
+import os
 import requests
+import datetime
+import mysql.connector
 from bs4  import BeautifulSoup
 from lxml import html
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 
 CASE_NUMBER = ''
@@ -21,7 +28,6 @@ def main():
 
     # Parse out the CSRF token for the search form
     search_csrf_token = parsedForm.find("input", {"name":"_token"})['value']
-    print( search_csrf_token )
 
     # Submit search request
     search_form_parameters = {
@@ -41,6 +47,56 @@ def main():
         'case_id': results_form_inputs[1]['value']
     }
     view_request = session_requests.post(VIEW_URL, view_form_parameters)
+    view_results = BeautifulSoup(view_request.content, 'html.parser')
+
+    # Retreive and store the case overview
+    details_overview = view_results.find('a', {'id': 'overview'}).parent
+    store_case(CASE_NUMBER, details_overview)
+
+
+
+
+
+
+
+
+def store_case(CASE_NUMBER, details_overview):
+    # Get the cell containing overview information
+    table_cells = details_overview.findAll('td')
+    overview_contents = table_cells[1].contents
+
+    # Get the case status
+    case_status =  overview_contents[3].string.lstrip().replace('Status: ', '')
+    if(case_status == 'CLOSED'):
+        CASE_STATUS = 1
+    else:
+        CASE_STATUS = 0
+
+    # Get the case filing date
+    date_filed =  overview_contents[6].string.lstrip().replace('Filed: ', '')
+    date_filed_parts = date_filed.split('/')
+    DATE_FILED = datetime.date(
+        int(date_filed_parts[2]),
+        int(date_filed_parts[0]),
+        int(date_filed_parts[1])
+    )
+
+    # Initialize database connection
+    db = mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USER"),
+        passwd=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
+    )
+
+    # Prepare insert query
+    mycursor = db.cursor()
+    sql = "INSERT INTO `case` (case_number, status, date_filed) VALUES (%s, %s, %s)"
+    val = (CASE_NUMBER, CASE_STATUS, DATE_FILED)
+
+    # Insert new data to the case table
+    mycursor.execute(sql, val)
+    db.commit()
 
 
 
