@@ -39,7 +39,11 @@ def main():
 
     # Retreive first result from search
     results_table = parsedResults.find('table', {'id': 'datatable'})
-    results_form_inputs = results_table.findAll('input')
+    try:
+        results_form_inputs = results_table.findAll('input')
+    except:
+        store_failure(CASE_NUMBER)
+        return
 
     # Submit post to view case details
     view_form_parameters = {
@@ -91,15 +95,33 @@ def store_case(CASE_NUMBER, details_overview):
 
     # Prepare insert query
     mycursor = db.cursor()
-    sql = "INSERT INTO `case` (case_number, status, date_filed) VALUES (%s, %s, %s)"
-    val = (CASE_NUMBER, CASE_STATUS, DATE_FILED)
+    sql = "INSERT INTO `case` (case_number, valid, status, date_filed) VALUES (%s, %s, %s, %s)"
+    val = (CASE_NUMBER, '1', CASE_STATUS, DATE_FILED)
 
     # Insert new data to the case table
     mycursor.execute(sql, val)
     db.commit()
+    print("SUCCESS WITH " + CASE_NUMBER)
 
 
+def store_failure(CASE_NUMBER):
+    # Initialize database connection
+    db = mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USER"),
+        passwd=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
+    )
 
+    # Prepare insert query
+    mycursor = db.cursor()
+    sql = "INSERT INTO `case` (case_number, valid) VALUES (%s, %s)"
+    val = (CASE_NUMBER, '0')
+
+    # Insert new data to the case table
+    mycursor.execute(sql, val)
+    db.commit()
+    print( 'I GIVE UP ON ' + CASE_NUMBER )
 
 
 if __name__ == '__main__':
