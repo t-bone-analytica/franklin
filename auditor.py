@@ -18,7 +18,6 @@ def main():
     status = 'OK'
     while status == 'OK':
         status = select_property_id()
-        print(status)
         time.sleep(2)
 
 
@@ -52,6 +51,7 @@ def select_property_id():
 
     store_property_class( PROPERTY_ID, PARCEL_CLASS )
     time.sleep(3)
+    return 'OK'
 
 
 
