@@ -1,6 +1,9 @@
 #!/usr/env python
 from pprint import pprint
 import os
+import sys
+import math
+import time
 import requests
 import datetime
 import mysql.connector
@@ -57,6 +60,10 @@ def main():
     details_overview = view_results.find('a', {'id': 'overview'}).parent
     store_case(CASE_NUMBER, details_overview)
 
+    # Retreive and store the case overview
+    details_parties = view_results.find('a', {'id': 'parties'}).parent
+    store_parties(CASE_NUMBER, details_parties)
+
 
 
 
@@ -102,6 +109,41 @@ def store_case(CASE_NUMBER, details_overview):
     mycursor.execute(sql, val)
     db.commit()
     print("SUCCESS WITH " + CASE_NUMBER)
+
+
+def store_parties(CASE_NUMBER, details_parties):
+    # Initialize database connection
+    db = mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USER"),
+        passwd=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
+    )
+
+    party_info_rows = details_parties.findAll('tr')
+    parties_count = math.ceil( (len(party_info_rows) / 4) )
+    print( "THERE ARE " + str(parties_count) + " PARTIES")
+
+    data_cells = details_parties.findAll('td', {'class': 'data'})
+    for i in range(parties_count):
+        PARTY_NAME  = str( data_cells[ (i * 6) + 1].contents[0] )
+        PARTY_TYPE  = str( data_cells[ (i * 6) + 2].contents[0] )
+        PARTY_ADDR  = str( data_cells[ (i * 6) + 3].contents[0] )
+        PARTY_CITY  = str( data_cells[ (i * 6) + 4].contents[0] )
+        city_and_zip = data_cells[ (i * 6) + 5].contents
+        PARTY_STATE = city_and_zip[0].split("/")[0]
+        PARTY_ZIP   = city_and_zip[0].split("/")[1]
+
+        if(PARTY_TYPE == "PLAINTIFF"):
+            # Prepare insert query
+            mycursor = db.cursor()
+            sql = "INSERT INTO `party` (case_number, name, address, city, state, zip) VALUES (%s, %s, %s, %s, %s, %s)"
+            val = (CASE_NUMBER, PARTY_NAME, PARTY_ADDR, PARTY_CITY, PARTY_STATE, PARTY_ZIP)
+
+            # Insert new data to the case table
+            mycursor.execute(sql, val)
+            db.commit()
+
 
 
 def store_failure(CASE_NUMBER):
