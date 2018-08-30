@@ -42,12 +42,16 @@ def select_property_id():
 
     PARCEL_CLASS_STRING = get_property_class(PROPERTY_ID)
 
-    classes = {
-        'R - Residential' : 1,
-        'C - Commercial'  : 2,
-        'E - Exempt'     : 3
-    }
-    PARCEL_CLASS = classes[PARCEL_CLASS_STRING]
+    if PARCEL_CLASS_STRING is 0:
+        PARCEL_CLASS = 0
+    else:
+        classes = {
+            'R - Residential' : 1,
+            'C - Commercial'  : 2,
+            'E - Exempt'      : 3,
+            'I - Industrial'  : 4
+        }
+        PARCEL_CLASS = classes[PARCEL_CLASS_STRING]
 
     store_property_class( PROPERTY_ID, PARCEL_CLASS )
     time.sleep(3)
@@ -76,9 +80,11 @@ def get_property_class(PARCEL_ID):
     results_request = session_requests.post(SEARCH_FORM_URL, search_form_parameters)
     parsedResults = BeautifulSoup(results_request.content, 'html.parser')
 
-
-    tax_status_table = parsedResults.find('table', {'id': '2017 Tax Status'})
-    tax_status_cells = tax_status_table.findAll('td')
+    try:
+        tax_status_table = parsedResults.find('table', {'id': '2017 Tax Status'})
+        tax_status_cells = tax_status_table.findAll('td')
+    except:
+        return 0
 
     return tax_status_cells[1].contents[0]
 
