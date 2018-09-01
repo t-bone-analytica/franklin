@@ -49,7 +49,8 @@ def select_property_id():
             'R - Residential' : 1,
             'C - Commercial'  : 2,
             'E - Exempt'      : 3,
-            'I - Industrial'  : 4
+            'I - Industrial'  : 4,
+            'A - Agricultural': 5
         }
         PARCEL_CLASS = classes[PARCEL_CLASS_STRING]
 
