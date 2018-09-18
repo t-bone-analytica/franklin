@@ -8,20 +8,56 @@ from bs4  import BeautifulSoup
 from lxml import html
 from dotenv import load_dotenv
 
+from pprint import pprint
+
 load_dotenv()
 
-
+RUNNING = 1
+CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
 
-
 def main():
-    status = 'OK'
-    while status == 'OK':
-        status = select_property_id()
+    RUNNING = get_next_record()
+    while RUNNING is 1:
+        try:
+            summary_soup = get_summary(CURRENT_RECORD)
+            tax_soup = 0
+            data = {
+                "parcel_id"              : get_parcel_id(summary_soup),
+                "address"                : get_address(summary_soup),
+                "ts_zip_code"            : get_ts_zip_code(summary_soup),
+                "company_name"           : get_company_name(summary_soup),
+                "tbm_name_1"             : get_tbm_name_1(summary_soup),
+                "tbm_name_2"             : get_tbm_name_2(summary_soup),
+                "tbm_address"            : get_tbm_address(summary_soup),
+                "tbm_city_state_zip"     : get_tbm_city_state_zip(summary_soup),
+                "ts_address_1"           : get_ts_address_1(summary_soup),
+                "ts_address_2"           : get_ts_address_2(summary_soup),
+                "ts_rental_registration" : get_ts_rental_registration(summary_soup),
+                "ts_tax_lien"            : get_ts_tax_lien(summary_soup),
+                "dd_year_built"          : get_dd_year_built(summary_soup),
+                "dd_fin_area"            : get_dd_fin_area(summary_soup),
+                "dd_bedrooms"            : get_dd_bedrooms(summary_soup),
+                "dd_full_baths"          : get_dd_full_baths(summary_soup),
+                "dd_half_baths"          : get_dd_half_baths(summary_soup),
+                "sd_acres"               : get_sd_acres(summary_soup),
+                "mrt_tansfer_date"       : get_mrt_tansfer_date(summary_soup),
+                "mrt_transfer_price"     : get_mrt_transfer_price(summary_soup),
+                "property_class"         : get_property_class(tax_soup),
+                "land_use"               : get_land_use(tax_soup),
+                "net_annual_tax"         : get_net_annual_tax(tax_soup)
+            }
+            store_data(data)
+        except:
+            store_error(CURRENT_RECORD)
+        # Dodge the rate limit for requests
         time.sleep(2)
+    print('END')
 
 
-def select_property_id():
+
+
+def get_next_record():
     # Initialize database connection
     db = mysql.connector.connect(
         host=os.getenv("MYSQL_HOST"),
@@ -30,38 +66,20 @@ def select_property_id():
         database=os.getenv("MYSQL_DATABASE")
     )
     cursor = db.cursor()
-
     # Get the next property id to be classified
-    cursor.execute("SELECT `parcel_id` FROM `delinquency` WHERE `property_class` is NULL ORDER BY `id` ASC LIMIT 1")
+    cursor.execute("SELECT `parcel_id` FROM `tax_info` WHERE `status` = 99 ORDER BY `id` ASC LIMIT 1")
     result = cursor.fetchone()
-    try:
-        PROPERTY_ID = result[0]
-    except:
-        return 'ERROR'
-
-
-    PARCEL_CLASS_STRING = get_property_class(PROPERTY_ID)
-
-    if PARCEL_CLASS_STRING is 0:
-        PARCEL_CLASS = 0
+    if cursor.rowcount is 1:
+        CURRENT_RECORD = str( result[0] )
+        print(CURRENT_RECORD)
+        return 1
     else:
-        classes = {
-            'R - Residential' : 1,
-            'C - Commercial'  : 2,
-            'E - Exempt'      : 3,
-            'I - Industrial'  : 4,
-            'A - Agricultural': 5,
-            'Z - Utility'     : 6
-        }
-        PARCEL_CLASS = classes[PARCEL_CLASS_STRING]
-
-    store_property_class( PROPERTY_ID, PARCEL_CLASS )
-    time.sleep(3)
-    return 'OK'
+        print("Could not find any more records")
+        return 0
 
 
 
-def get_property_class(PARCEL_ID):
+def get_summary(CURRENT_RECORD):
     # Create a persistent session
     session_requests = requests.session()
 
@@ -77,21 +95,20 @@ def get_property_class(PARCEL_ID):
     search_form_parameters = {
         "ScriptManager1_TSM" : PARAM_SCRIPTMANAGER,
         "__VIEWSTATE"        : PARAM_VIEWSTATE,
-        "inpParid"           : PARCEL_ID
+        "inpParid"           : CURRENT_RECORD
     }
     results_request = session_requests.post(SEARCH_FORM_URL, search_form_parameters)
-    parsedResults = BeautifulSoup(results_request.content, 'html.parser')
-
-    try:
-        tax_status_table = parsedResults.find('table', {'id': '2017 Tax Status'})
-        tax_status_cells = tax_status_table.findAll('td')
-    except:
-        return 0
-
-    return tax_status_cells[1].contents[0]
+    return BeautifulSoup(results_request.content, 'html.parser')
 
 
-def store_property_class(PROPERTY_ID, PARCEL_CLASS):
+
+
+def store_data(data):
+    pprint(data)
+
+
+
+def store_error(parcel_id):
     # Initialize database connection
     db = mysql.connector.connect(
         host=os.getenv("MYSQL_HOST"),
@@ -100,12 +117,135 @@ def store_property_class(PROPERTY_ID, PARCEL_CLASS):
         database=os.getenv("MYSQL_DATABASE")
     )
     cursor = db.cursor()
-
-    sql = "UPDATE `delinquency` SET `property_class` = %s WHERE `parcel_id` = %s LIMIT 1"
-    val = ( str(PARCEL_CLASS), str(PROPERTY_ID) )
-
+    print("setting status to -1")
+    sql = "UPDATE `tax_info` SET `status` = -1 WHERE `parcel_id` = '%s' LIMIT 1"
+    val = ( str(parcel_id) )
+    pprint(val)
     cursor.execute(sql, val)
     db.commit()
+
+
+
+
+def get_status(soup):
+    return 'NULL'
+
+
+
+def get_parcel_id(soup):
+    return 'NULL'
+
+
+
+def get_address(soup):
+    return 'NULL'
+
+
+
+def get_ts_zip_code(soup):
+    return 'NULL'
+
+
+
+def get_company_name(soup):
+    return 'NULL'
+
+
+
+def get_tbm_name_1(soup):
+    return 'NULL'
+
+
+
+def get_tbm_name_2(soup):
+    return 'NULL'
+
+
+
+def get_tbm_address(soup):
+    return 'NULL'
+
+
+
+def get_tbm_city_state_zip(soup):
+    return 'NULL'
+
+
+
+def get_ts_address_1(soup):
+    return 'NULL'
+
+
+
+def get_ts_address_2(soup):
+    return 'NULL'
+
+
+
+def get_ts_rental_registration(soup):
+    return 'NULL'
+
+
+
+def get_ts_tax_lien(soup):
+    return 'NULL'
+
+
+
+def get_dd_year_built(soup):
+    return 'NULL'
+
+
+
+def get_dd_fin_area(soup):
+    return 'NULL'
+
+
+
+def get_dd_bedrooms(soup):
+    return 'NULL'
+
+
+
+def get_dd_full_baths(soup):
+    return 'NULL'
+
+
+
+def get_dd_half_baths(soup):
+    return 'NULL'
+
+
+
+def get_sd_acres(soup):
+    return 'NULL'
+
+
+
+def get_mrt_tansfer_date(soup):
+    return 'NULL'
+
+
+
+def get_mrt_transfer_price(soup):
+    return 'NULL'
+
+
+
+def get_property_class(soup):
+    return 'NULL'
+
+
+
+def get_land_use(soup):
+    return 'NULL'
+
+
+
+def get_net_annual_tax(soup):
+    return 'NULL'
+
+
 
 
 
