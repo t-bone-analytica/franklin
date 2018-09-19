@@ -17,6 +17,9 @@ CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
 
 def main():
+    global CURRENT_RECORD
+    global RUNNING
+
     RUNNING = get_next_record()
     while RUNNING is 1:
         try:
@@ -49,15 +52,19 @@ def main():
             }
             store_data(data)
         except:
-            store_error(CURRENT_RECORD)
+            store_error()
         # Dodge the rate limit for requests
         time.sleep(2)
+
+        RUNNING = get_next_record()
     print('END')
 
 
 
 
 def get_next_record():
+    global CURRENT_RECORD
+
     # Initialize database connection
     db = mysql.connector.connect(
         host=os.getenv("MYSQL_HOST"),
@@ -71,7 +78,7 @@ def get_next_record():
     result = cursor.fetchone()
     if cursor.rowcount is 1:
         CURRENT_RECORD = str( result[0] )
-        print(CURRENT_RECORD)
+        print("got next record: " + CURRENT_RECORD)
         return 1
     else:
         print("Could not find any more records")
@@ -104,11 +111,25 @@ def get_summary(CURRENT_RECORD):
 
 
 def store_data(data):
-    pprint(data)
+    global CURRENT_RECORD
+    # Initialize database connection
+    db = mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USER"),
+        passwd=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
+    )
+    cursor = db.cursor()
+    print("Storing scraped data")
+    sql = "UPDATE `tax_info` SET `status` = 1 WHERE `parcel_id` = '" + str(CURRENT_RECORD) + "' LIMIT 1"
+    val = ( CURRENT_RECORD )
+    cursor.execute(sql)
+    db.commit()
 
 
 
-def store_error(parcel_id):
+def store_error():
+    global CURRENT_RECORD
     # Initialize database connection
     db = mysql.connector.connect(
         host=os.getenv("MYSQL_HOST"),
@@ -118,10 +139,11 @@ def store_error(parcel_id):
     )
     cursor = db.cursor()
     print("setting status to -1")
-    sql = "UPDATE `tax_info` SET `status` = -1 WHERE `parcel_id` = '%s' LIMIT 1"
-    val = ( str(parcel_id) )
-    pprint(val)
-    cursor.execute(sql, val)
+    sql = "UPDATE `tax_info` SET `status` = -1 WHERE `parcel_id` = '" + str(CURRENT_RECORD) + "' LIMIT 1"
+    # val = ( CURRENT_RECORD )
+    # pprint(sql)
+    # pprint(val)
+    cursor.execute(sql)
     db.commit()
 
 
