@@ -15,6 +15,7 @@ load_dotenv()
 RUNNING = 1
 CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
+TAX_URL = "http://property.franklincountyauditor.com/_web/datalets/datalet.aspx?mode=taxdistribution&sIndex=0&idx=1&LMparent=20"
 
 def main():
     global CURRENT_RECORD
@@ -23,8 +24,10 @@ def main():
     RUNNING = get_next_record()
     while RUNNING is 1:
         try:
-            summary_soup = get_summary(CURRENT_RECORD)
-            tax_soup = 0
+            # Create a persistent session
+            session_requests = requests.session()
+            summary_soup = get_summary(session_requests)
+            tax_soup = get_tax_info(session_requests)
             data = {
                 "parcel_id"              : get_parcel_id(summary_soup),
                 "address"                : get_address(summary_soup),
@@ -86,9 +89,8 @@ def get_next_record():
 
 
 
-def get_summary(CURRENT_RECORD):
-    # Create a persistent session
-    session_requests = requests.session()
+def get_summary(session_requests):
+    global CURRENT_RECORD
 
     # Retrieve the search form
     search_form_request = session_requests.get(SEARCH_FORM_URL)
@@ -106,6 +108,17 @@ def get_summary(CURRENT_RECORD):
     }
     results_request = session_requests.post(SEARCH_FORM_URL, search_form_parameters)
     return BeautifulSoup(results_request.content, 'html.parser')
+
+
+
+def get_tax_info(session_requests):
+    global CURRENT_RECORD
+
+    tax_request = session_requests.get("http://property.franklincountyauditor.com/_web/datalets/datalet.aspx?mode=taxdistribution&sIndex=0&idx=1&LMparent=20")
+    # file = open("tax.html", "w")
+    # file.write(tax_request.text)
+    # file.close()
+    return BeautifulSoup(tax_request.content, 'html.parser')
 
 
 
