@@ -340,17 +340,18 @@ def get_mrt_transfer_price(soup):
 
 
 def get_property_class(soup):
-    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[0].contents[0]
+    return soup.find('table', {'id': 'Tax Status'}).findChildren('td', {'class': 'DataletData'})[0].contents[0]
 
 
 
 def get_land_use(soup):
-    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[1].contents[0]
+    return soup.find('table', {'id': 'Tax Status'}).findChildren('td', {'class': 'DataletData'})[1].contents[0]
 
 
 
 def get_net_annual_tax(soup):
-    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
+    return soup.find('table', {'id': 'Tax Status'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
+
 
 
 
