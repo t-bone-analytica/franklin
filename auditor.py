@@ -114,7 +114,7 @@ def get_summary(session_requests):
 def get_tax_info(session_requests):
     global CURRENT_RECORD
 
-    tax_request = session_requests.get("http://property.franklincountyauditor.com/_web/datalets/datalet.aspx?mode=taxdistribution&sIndex=0&idx=1&LMparent=20")
+    tax_request = session_requests.get(TAX_URL)
     # file = open("tax.html", "w")
     # file.write(tax_request.text)
     # file.close()
