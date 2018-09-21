@@ -82,7 +82,6 @@ def get_next_record():
     result = cursor.fetchone()
     if cursor.rowcount is 1:
         CURRENT_RECORD = str( result[0] )
-        print("got next record: " + CURRENT_RECORD)
         return 1
     else:
         print("Could not find any more records")
