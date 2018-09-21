@@ -15,7 +15,7 @@ load_dotenv()
 RUNNING = 1
 CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
-TAX_URL = "http://property.franklincountyauditor.com/_web/datalets/datalet.aspx?mode=taxdistribution&sIndex=0&idx=1&LMparent=20"
+TAX_URL = "http://property.franklincountyauditor.com/_web/datalets/datalet.aspx?mode=taxpayments&sIndex=7&idx=1&LMparent=20"
 
 def main():
     global CURRENT_RECORD
