@@ -37,8 +37,8 @@ def main():
                 "tbm_name_2"             : get_tbm_name_2(summary_soup),
                 "tbm_address"            : get_tbm_address(summary_soup),
                 "tbm_city_state_zip"     : get_tbm_city_state_zip(summary_soup),
-                "ts_address_1"           : get_ts_address_1(summary_soup),
-                "ts_address_2"           : get_ts_address_2(summary_soup),
+                "ts_tax_district"        : get_ts_tax_district(summary_soup),
+                "ts_school_district"     : get_ts_school_district(summary_soup),
                 "ts_rental_registration" : get_ts_rental_registration(summary_soup),
                 "ts_tax_lien"            : get_ts_tax_lien(summary_soup),
                 "dd_year_built"          : get_dd_year_built(summary_soup),
@@ -168,117 +168,137 @@ def get_status(soup):
 
 
 def get_parcel_id(soup):
-    return 'NULL'
+    return CURRENT_RECORD
 
 
 
 def get_address(soup):
-    return 'NULL'
+    return soup.find('tr', {'id': 'datalet_header_row'}).findChildren('td', {'class': 'DataletHeaderBottom'})[1].contents[0]
 
 
 
 def get_ts_zip_code(soup):
-    return 'NULL'
+    return soup.find('table', {'id': '2017 Tax Status'}).findChildren('td', {'class': 'DataletData'})[13].contents[0]
 
 
 
 def get_company_name(soup):
-    return 'NULL'
+    return ''
 
 
 
 def get_tbm_name_1(soup):
-    return 'NULL'
+    name = soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[11].contents[0]
+    return name.replace(u'\xa0', '')
 
 
 
 def get_tbm_name_2(soup):
-    return 'NULL'
+    name = soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[12].contents[0]
+    return name.replace(u'\xa0', '')
 
 
 
 def get_tbm_address(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[13].contents[0]
 
 
 
 def get_tbm_city_state_zip(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[14].contents[0]
 
 
 
-def get_ts_address_1(soup):
-    return 'NULL'
+def get_ts_tax_district(soup):
+    return soup.find('table', {'id': '2017 Tax Status'}).findChildren('td', {'class': 'DataletData'})[2].contents[0]
 
 
 
-def get_ts_address_2(soup):
-    return 'NULL'
+def get_ts_school_district(soup):
+    return soup.find('table', {'id': '2017 Tax Status'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
 
 
 
 def get_ts_rental_registration(soup):
-    return 'NULL'
+    return soup.find('table', {'id': '2017 Tax Status'}).findChildren('td', {'class': 'DataletData'})[11].contents[0]
 
 
 
 def get_ts_tax_lien(soup):
-    return 'NULL'
+    return soup.find('table', {'id': '2017 Tax Status'}).findChildren('td', {'class': 'DataletData'})[7].contents[0]
 
 
 
 def get_dd_year_built(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Dwelling Data'}):
+        return soup.find('table', {'id': 'Dwelling Data'}).findChildren('td', {'class': 'DataletData'})[0].contents[0]
+    else:
+        return ''
 
 
 
 def get_dd_fin_area(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Dwelling Data'}):
+        return soup.find('table', {'id': 'Dwelling Data'}).findChildren('td', {'class': 'DataletData'})[1].contents[0]
+    else:
+        return ''
 
 
 
 def get_dd_bedrooms(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Dwelling Data'}):
+        return soup.find('table', {'id': 'Dwelling Data'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
+    else:
+        return ''
 
 
 
 def get_dd_full_baths(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Dwelling Data'}):
+        return soup.find('table', {'id': 'Dwelling Data'}).findChildren('td', {'class': 'DataletData'})[4].contents[0]
+    else:
+        return ''
 
 
 
 def get_dd_half_baths(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Dwelling Data'}):
+        return soup.find('table', {'id': 'Dwelling Data'}).findChildren('td', {'class': 'DataletData'})[4].contents[0]
+    else:
+        return ''
 
 
 
 def get_sd_acres(soup):
-    return 'NULL'
+    if soup.find('table', {'id': 'Site Data'}):
+        return soup.find('table', {'id': 'Site Data'}).findChildren('td', {'class': 'DataletData'})[2].contents[0]
+    else:
+        return soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[8].contents[0]
 
 
 
 def get_mrt_tansfer_date(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Most Recent Transfer'}).findChildren('td', {'class': 'DataletData'})[0].contents[0]
 
 
 
 def get_mrt_transfer_price(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Most Recent Transfer'}).findChildren('td', {'class': 'DataletData'})[1].contents[0]
 
 
 
 def get_property_class(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[0].contents[0]
 
 
 
 def get_land_use(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[1].contents[0]
 
 
 
 def get_net_annual_tax(soup):
-    return 'NULL'
+    return soup.find('table', {'id': 'Tax Distribution'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
 
 
 
