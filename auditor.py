@@ -8,6 +8,7 @@ from bs4  import BeautifulSoup
 from lxml import html
 from dotenv import load_dotenv
 
+import traceback
 from pprint import pprint
 
 load_dotenv()
@@ -77,7 +78,7 @@ def get_next_record():
     )
     cursor = db.cursor()
     # Get the next property id to be classified
-    cursor.execute("SELECT `parcel_id` FROM `tax_info` WHERE `status` = 99 ORDER BY `id` ASC LIMIT 1")
+    cursor.execute("SELECT `parcel_id` FROM `tax_info` WHERE `status` = 0 ORDER BY `id` ASC LIMIT 1")
     result = cursor.fetchone()
     if cursor.rowcount is 1:
         CURRENT_RECORD = str( result[0] )
@@ -115,9 +116,7 @@ def get_tax_info(session_requests):
     global CURRENT_RECORD
 
     tax_request = session_requests.get(TAX_URL)
-    # file = open("tax.html", "w")
-    # file.write(tax_request.text)
-    # file.close()
+
     return BeautifulSoup(tax_request.content, 'html.parser')
 
 
@@ -205,9 +204,6 @@ def store_error():
     cursor = db.cursor()
     print("setting status to -1")
     sql = "UPDATE `tax_info` SET `status` = -1 WHERE `parcel_id` = '" + str(CURRENT_RECORD) + "' LIMIT 1"
-    # val = ( CURRENT_RECORD )
-    # pprint(sql)
-    # pprint(val)
     cursor.execute(sql)
     db.commit()
 
@@ -322,10 +318,13 @@ def get_dd_half_baths(soup):
 
 
 def get_sd_acres(soup):
-    if soup.find('table', {'id': 'Site Data'}):
+    try:
         return soup.find('table', {'id': 'Site Data'}).findChildren('td', {'class': 'DataletData'})[2].contents[0]
-    else:
-        return soup.find('table', {'id': 'Owner'}).findChildren('td', {'class': 'DataletData'})[8].contents[0]
+    except:
+        try:
+            return soup.find('table', {'id': 'Site Data'}).findChildren('td', {'class': 'DataletData'})[6].contents[0]
+        except:
+            return ''
 
 
 
