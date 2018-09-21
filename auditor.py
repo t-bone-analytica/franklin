@@ -133,10 +133,62 @@ def store_data(data):
         database=os.getenv("MYSQL_DATABASE")
     )
     cursor = db.cursor()
-    print("Storing scraped data")
-    sql = "UPDATE `tax_info` SET `status` = 1 WHERE `parcel_id` = '" + str(CURRENT_RECORD) + "' LIMIT 1"
-    val = ( CURRENT_RECORD )
-    cursor.execute(sql)
+    sql = """
+        UPDATE `tax_info`
+        SET
+            `status` = 1,
+            `address` = %s,
+            `ts_zip_code` = %s,
+            `company_name` = %s,
+            `tbm_name_1` = %s,
+            `tbm_name_2` = %s,
+            `tbm_address` = %s,
+            `tbm_city_state_zip` = %s,
+            `ts_tax_district` = %s,
+            `ts_school_district` = %s,
+            `ts_rental_registration` = %s,
+            `ts_tax_lien` = %s,
+            `dd_year_built` = %s,
+            `dd_fin_area` = %s,
+            `dd_bedrooms` = %s,
+            `dd_full_baths` = %s,
+            `dd_half_baths` = %s,
+            `sd_acres` = %s,
+            `mrt_tansfer_date` = %s,
+            `mrt_transfer_price` = %s,
+            `property_class` = %s,
+            `land_use` = %s,
+            `net_annual_tax` = %s
+        WHERE
+            (`parcel_id` = %s);
+    """
+    values = (
+                str( data["address"] ),
+                str( data["ts_zip_code"] ),
+                str( data["company_name"] ),
+                str( data["tbm_name_1"] ),
+                str( data["tbm_name_2"] ),
+                str( data["tbm_address"] ),
+                str( data["tbm_city_state_zip"] ),
+                str( data["ts_tax_district"] ),
+                str( data["ts_school_district"] ),
+                str( data["ts_rental_registration"] ),
+                str( data["ts_tax_lien"] ),
+                str( data["dd_year_built"] ),
+                str( data["dd_fin_area"] ),
+                str( data["dd_bedrooms"] ),
+                str( data["dd_full_baths"] ),
+                str( data["dd_half_baths"] ),
+                str( data["sd_acres"] ),
+                str( data["mrt_tansfer_date"] ),
+                str( data["mrt_transfer_price"] ),
+                str( data["property_class"] ),
+                str( data["land_use"] ),
+                str( data["net_annual_tax"] ),
+                str(CURRENT_RECORD)
+    )
+
+    cursor.execute(sql, values)
     db.commit()
 
 
