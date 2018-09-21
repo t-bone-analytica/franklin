@@ -52,7 +52,10 @@ def main():
                 "mrt_transfer_price"     : get_mrt_transfer_price(summary_soup),
                 "property_class"         : get_property_class(tax_soup),
                 "land_use"               : get_land_use(tax_soup),
-                "net_annual_tax"         : get_net_annual_tax(tax_soup)
+                "net_annual_tax"         : get_net_annual_tax(tax_soup),
+                "tyd_annual_total"       : get_tyd_annual_total(tax_soup),
+                "tyd_payment_total"      : get_tyd_payment_total(tax_soup),
+                "tyd_total_total"        : get_tyd_total_total(tax_soup)
             }
             store_data(data)
         except:
@@ -156,7 +159,10 @@ def store_data(data):
             `mrt_transfer_price` = %s,
             `property_class` = %s,
             `land_use` = %s,
-            `net_annual_tax` = %s
+            `net_annual_tax` = %s,
+            `tyd_annual_total` = %s,
+            `tyd_payment_total` = %s,
+            `tyd_total_total` = %s
         WHERE
             (`parcel_id` = %s);
     """
@@ -183,6 +189,9 @@ def store_data(data):
                 str( data["property_class"] ),
                 str( data["land_use"] ),
                 str( data["net_annual_tax"] ),
+                str( data["tyd_annual_total"] ),
+                str( data["tyd_payment_total"] ),
+                str( data["tyd_total_total"] ),
                 str(CURRENT_RECORD)
     )
 
@@ -351,6 +360,19 @@ def get_net_annual_tax(soup):
     return soup.find('table', {'id': 'Tax Status'}).findChildren('td', {'class': 'DataletData'})[3].contents[0]
 
 
+
+def get_tyd_annual_total(soup):
+    return soup.find('table', {'id': 'Tax Year Detail'}).findChildren('td', {'class': 'DataletData'})[61].contents[0]
+
+
+
+def get_tyd_payment_total(soup):
+    return soup.find('table', {'id': 'Tax Year Detail'}).findChildren('td', {'class': 'DataletData'})[63].contents[0]
+
+
+
+def get_tyd_total_total(soup):
+    return soup.find('table', {'id': 'Tax Year Detail'}).findChildren('td', {'class': 'DataletData'})[64].contents[0]
 
 
 
