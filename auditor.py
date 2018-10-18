@@ -13,6 +13,7 @@ from pprint import pprint
 
 load_dotenv()
 
+SCRAPE_COUNT = 0
 RUNNING = 1
 CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
@@ -58,13 +59,14 @@ def main():
                 "tyd_total_total"        : get_tyd_total_total(tax_soup)
             }
             store_data(data)
+            SCRAPE_COUNT += 1
         except:
             store_error()
         # Dodge the rate limit for requests
         time.sleep(2)
 
         RUNNING = get_next_record()
-    print('END')
+    os.system("php " + os.getenv("ARTISAN_PATH") + " export:tax-info")
 
 
 
