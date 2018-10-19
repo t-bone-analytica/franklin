@@ -13,7 +13,6 @@ from pprint import pprint
 
 load_dotenv()
 
-SCRAPE_COUNT = 0
 RUNNING = 1
 CURRENT_RECORD = "not set yet"
 SEARCH_FORM_URL = "http://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid"
@@ -23,6 +22,7 @@ def main():
     global CURRENT_RECORD
     global RUNNING
 
+    SCRAPE_COUNT = 0
     RUNNING = get_next_record()
     while RUNNING is 1:
         try:
@@ -66,7 +66,8 @@ def main():
         time.sleep(2)
 
         RUNNING = get_next_record()
-    os.system("php " + os.getenv("ARTISAN_PATH") + " export:tax-info")
+    if SCRAPE_COUNT > 0:
+        os.system("php " + os.getenv("ARTISAN_PATH") + " export:tax-info")
 
 
 
